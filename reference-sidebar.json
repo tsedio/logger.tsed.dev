@@ -1,0 +1,14 @@
+[
+  {
+    "text": "Core",
+    "items": [
+      {
+        "text": "logger"
+      }
+    ]
+  },
+  {
+    "text": "Plugins",
+    "items": []
+  }
+]

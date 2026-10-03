@@ -1,0 +1,1704 @@
+---
+url: /introduction/what-is-tsed.md
+---
+# What is Ts.ED?
+
+Ts.ED is a framework for building server-side and scalable applications for Node.js environment. It's built with [TypeScript](http://www.typescriptlang.org/) and uses classes (OOP), decorators and Functional programming
+to develop your application.
+
+It uses [Express.js](https://expressjs.com/) HTTP server frameworks by default, but it's also possible to use [Koa.js](https://koajs.com) or [Serverless](https://www.serverless.com/) as well.
+
+Ts.ED provides a level of abstraction above these common Node.js frameworks (Express/Koa) with the [Platform API](https://tsed.dev/docs/platform-api)
+but also exposes their APIs directly for the developer. It gives developers the freedom to use the myriad of third-party
+node modules which are available for the underlying platform.
+
+Just want to try it out? Skip to the [Quickstart](/introduction/getting-started).
+
+## Philosophy
+
+Node.js opened the possibility of making server applications with Javascript, allowing to pool front-end and back-end skills.
+
+With this we have seen the birth of extraordinary projects like [React.js](https://reactjs.org/), [Vue.js](https://vuejs.org/), [Angular](https://angular.io).
+Each of these projects bring their vision of a web application, but we have the same wish, to make the developer's life easier by providing
+all the right tools to developers so that they are quickly productive.
+
+Ts.ED tends towards the same objective which is to achieve better productivity while remaining easy to understand.
+To achieve this, Ts.ED provides out-of-the-box an application architecture, highly testable, scalable and maintainable.
+
+---
+
+---
+url: /introduction/capabilities.md
+---
+# Capabilities
+
+Ts.ED Logger is a Node.js and TypeScript multi-chanel logger.
+It provides plugins to log on the console, files, remote services, and more. The logger is designed to be extensible and easy to use.
+
+You can use the logger in your Node.js and browser applications without a complex configuration.
+
+You can find below the list of features and plugins provided by Ts.ED Logger and the compatibility with the different environment.
+
+## Appenders
+
+[Appenders](/appenders/index.md) serialise log events to some form of output.
+They can write to files, send emails, send data over the network.
+It's basically a plugin that allows you to define where your logs will be written.
+
+Here are the appenders list provided by Ts.ED logger and the compatibility with the different environments:
+
+| Features                                                      | Node.js/Bun.js                                     | Browser                                             |
+| ------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------- |
+| [Console](/appenders/console.md)                              |  |   |
+| [Connect](/appenders/connect.md)                              |  |  |
+| [File](/appenders/file.md)                                    |  |  |
+| [File Date](/appenders/file.md)                               |  |  |
+| [Stdout](/appenders/stdout.md)/[StdErr](/appenders/stderr.md) |  |  |
+| [Insight](/appenders/insight.md)                              |  | ?                                                   |
+| [LogEntries](/appenders/logentries.md)                        |  | ?                                                   |
+| [LogStash UDP](/appenders/logstash-udp.md)                    |  |  |
+| [LogStash Http](/appenders/logstash-http.md)                  |  |   |
+| [Loggly](/appenders/loggly.md)                                |  | ?                                                   |
+| [RabbitMQ](/appenders/rabbitmq.md)                            |  | ?                                                   |
+| [Seq](/appenders/seq.md)                                      |  | ?                                                   |
+| [Slack](/appenders/slack.md)                                  |  | ?                                                   |
+| [Smtp](/appenders/smtp.md)                                    |  |  |
+
+::: tip
+If none of the above appenders meet your needs, you can create your own appender by following the [custom appender](/appenders/custom.md) guide.
+:::
+
+## Layouts
+
+[Layouts](/layouts/index.md) are functions used by [appenders](/appenders/index.md) to format log events for output. They take a log event as an argument and return a string. TsLogDebug comes with several layouts built-in, and provides ways to create your own if these are not suitable.
+
+For most use cases you will not need to configure layouts - there are some appenders which do not need layouts defined (for example, logstash-UDP);
+all the appenders that use layouts will have a sensible default defined.
+
+Most appender configuration will take a field called layout, which is an object - typically with a single field type which is the name of a layout defined below.
+Some layouts require extra configuration options, which should be included in the same object.
+
+| Features                                                 | Description                                                                                                                            |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [Basic](/layouts/basic.md)                               | Basic layout will output the timestamp, level, category, followed by the formatted log event data.                                     |
+| [Colored](/layouts/colored.md)                           | Colored layout is the same as basic, except that the timestamp, level and category will be colored according to the log event's level. |
+| [Dummy](/layouts/dummy.md)                               | Dummy only outputs the first value in the log event's data.                                                                            |
+| [Message Pass-Through](/layouts/message-pass-through.md) | Just formats the log event data, and does not output a timestamp,level or category                                                     |
+| [JSON](/layouts/json.md)                                 | JSON layout outputs the log event data as a JSON string.                                                                               |
+| [Pattern](/layouts/pattern.md)                           | Pattern layout allows you to define a custom layout using a pattern string.                                                            |
+
+::: tip
+If you need to create your own layout, you can follow the [custom layout](/layouts/custom.md) guide.
+:::
+
+---
+
+---
+url: /introduction/getting-started.md
+---
+
+# Getting started
+
+## Installation
+
+```bash
+npm install @tsed/logger
+```
+
+`@tsed/logger` v8 is ESM only and ships the console appender and the colored layout. Other appenders and layouts are
+installed and imported on demand:
+
+```bash
+npm install @tsed/logger-std @tsed/logger-file @tsed/logger-pattern-layout
+```
+
+See the [migration guide](/introduction/migrate-to-v8) when you come from v7.
+
+## Quick start
+
+Minimalist version:
+
+```typescript
+import {$log} from "@tsed/logger";
+
+$log.level = "debug";
+$log.name = "APP";
+
+$log.debug("Some debug messages");
+```
+
+Will be produce the following log output:
+
+```
+[2017-06-17 11:43:37.987] [DEBUG] [APP] - Some debug messages
+```
+
+## Create your own logger
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger/layouts/JsonLayout.js"; // registers the "json" layout
+import "@tsed/logger-file"; // registers the "file" appender
+import "@tsed/logger-pattern-layout"; // registers the "pattern" layout
+import "@tsed/logger-std"; // registers the "stdout" and "stderr" appenders
+
+const logger = new Logger("loggerName");
+logger.appenders
+  .set("std-log", {
+    type: "stdout",
+    levels: ["debug", "info", "trace"]
+  })
+  .set("error-log", {
+    type: "stderr",
+    levels: ["fatal", "error", "warn"],
+    layout: {
+      type: "pattern",
+      pattern: "%d %p %c %X{user} %m%n"
+    }
+  })
+  .set("all-log-file", {
+    type: "file",
+    filename: `${import.meta.dirname}/app.log`,
+    layout: {
+      type: "json",
+      separator: ","
+    }
+  });
+```
+
+::: warning
+An appender or a layout whose package is not imported is unknown to the logger: it prints a warning and falls back to the
+console appender or the colored layout.
+:::
+
+## Shutdown
+
+Shutdown return a Promise that will be resolved when logger has closed all appenders and finished writing log events.
+Use this when your programme exits to make sure all your logs are written to files, sockets are closed, etc.
+
+```typescript
+import {Logger} from "@tsed/logger";
+
+const logger = new Logger("loggerName");
+logger.shutdown().then(() => {
+  console.log("Complete");
+});
+```
+
+---
+
+---
+url: /introduction/migrate-to-v8.md
+---
+# Migration Guide: v7 to v8
+
+This guide helps you migrate your application from @tsed/logger v7 to v8.
+
+## Major Changes
+
+### Appenders and Layouts Changes
+
+In v7, Appenders and Layouts were bundled with the main `@tsed/logger` package and automatically installed. In v8, this has changed:
+
+* Appenders and Layouts are no longer exported from the root of the package (except for ColoredLayout)
+* You must explicitly import the layouts you want to use
+* StdoutAppender and StdErrAppender have been moved to a separate package: `@tsed/logger-std`
+* PatternLayout has been moved to its own package: `@tsed/logger-pattern-layout`
+
+#### Importing Layouts
+
+```typescript
+// v7 (old)
+import {JsonLayout} from "@tsed/logger";
+
+// v8 (new)
+import "@tsed/logger/layouts/JsonLayout.js";
+```
+
+#### Using StdoutAppender and StdErrAppender
+
+First, install the new package:
+
+```bash
+npm install @tsed/logger-std
+# or
+yarn add @tsed/logger-std
+```
+
+Then import and use it:
+
+```typescript
+// v7 (old)
+import {StdoutAppender, StdErrAppender} from "@tsed/logger";
+
+// v8 (new)
+import {StdoutAppender, StderrAppender} from "@tsed/logger-std";
+```
+
+#### Using PatternLayout
+
+First, install the new package:
+
+```bash
+npm install @tsed/logger-pattern-layout
+# or
+yarn add @tsed/logger-pattern-layout
+```
+
+Then import and use it:
+
+```typescript
+// v7 (old)
+import {PatternLayout} from "@tsed/logger";
+
+// v8 (new)
+import {PatternLayout} from "@tsed/logger-pattern-layout";
+```
+
+## Migration Steps
+
+### 1. Update Dependencies
+
+Update your package.json to use the latest version:
+
+```json
+{
+  "dependencies": {
+    "@tsed/logger": "^8.0.0"
+  }
+}
+```
+
+---
+
+---
+url: /appenders.md
+---
+# Appenders
+
+Appenders serialise log events to some form of output. They can write to files, send emails, send data over the network. All appenders have a type which determines which appender gets used. For example:
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-file";
+import "@tsed/logger-std";
+
+const logger = new Logger("loggerName");
+
+logger.appenders
+  .set("stdout", {
+    type: "stdout",
+    levels: ["debug", "info", "trace"]
+  })
+  .set("stderr", {
+    type: "stderr",
+    levels: ["error", "fatal", "warn"]
+  })
+  .set("file", {
+    type: "file",
+    filename: "logfile.log"
+  });
+```
+
+::: tip
+This example defines three appenders named `stdout`, `stderr` and `file`.
+:::
+
+## Core Appenders
+
+The following appenders are included with Ts.Logger.
+
+---
+
+---
+url: /appenders/console.md
+---
+# Console Appender
+
+This appender uses node’s console object to write log events.
+Be aware that writing a high volume of output to the console can make your application use a lot of memory.
+If you experience this problem, try switching to the [`stdout`](/appenders/stdout.md) appender.
+
+## Configuration
+
+type - `console`
+layout - object (optional, defaults to [`coloredLayout`](/layouts/colored.md)) - see [layouts](/layouts/index.md)
+
+::: tip
+Note that all log events are output using `console.log` regardless of the event's level (so `ERROR` events will not be logged using `console.error`).
+:::
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("console-log", {
+  type: "console"
+});
+```
+
+---
+
+---
+url: /appenders/connect.md
+---
+# Connect Appender
+
+The module let developer use external logger that implement the classic logger methods (info, debug, warn, trace, error, fatal).
+
+```bash
+npm install --save @tsed/logger-connect
+```
+
+## Configuration
+
+* `type` - `connect`
+* `options.logger` - your instance logger
+
+## Example
+
+```typescript
+import {$log} from "@tsed/logger";
+import "@tsed/logger-connect";
+
+$log.appenders.clear();
+$log.appenders.set("channel", {
+  type: "connect",
+  options: {
+    logger: {
+      info: (obj) => console.log(obj),
+      warn: (obj) => console.warn(obj),
+      debug: (obj) => console.debug(obj),
+      trace: (obj) => console.trace(obj),
+      error: (obj) => console.error(obj)
+    }
+  }
+});
+
+$log.info({tags: ["my-tag-1", "my-tag-2"]}, "Some message");
+```
+
+---
+
+---
+url: /appenders/file.md
+---
+# File Appender
+
+The file appender writes log events to a file. It supports an optional maximum file size, and will keep a configurable
+number of backups.
+When using the file appender, you should also call [logger.shutdown()](/introduction/getting-started.md) when your application terminates,
+to ensure that any remaining asynchronous writes have finished.
+Although the file appender uses the [streamroller](https://github.com/nomiddlename/streamroller) library, this is included as a dependency of ts-log-debug so you do not
+need to include it yourself.
+
+## Installation
+
+```bash
+npm install --save @tsed/logger-file
+```
+
+## Configuration
+
+* **type** - `file`
+* **filename - string** - the path of the file where you want your logs written.
+* **maxLogSize - integer** (optional) - the maximum size (in bytes) for the log file. If not specified, then no log rolling will happen.
+* **backups - integer** (optional, default value = 5) - the number of old log files to keep during log rolling.
+* **layout** - (optional, defaults to basic layout) - see [layouts](/layouts/index.md)
+
+Any other configuration parameters will be passed to the underlying [streamroller](https://github.com/nomiddlename/streamroller)
+implementation (see also node.js core file streams):
+
+* **encoding** - string (default “utf-8”)
+* **mode** - integer (default 0644)
+* **flags** - string (default ‘a’)
+* **compress** - boolean (default false) - compress the backup files during rolling (backup files will have .gz extension)
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-file";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("everything", {
+  type: "file",
+  filename: "all-the-logs.log"
+});
+
+logger.debug("I will be logged in all-the-logs.log");
+```
+
+This example will result in a single log file (all-the-logs.log) containing the log messages.
+
+## Example with log rolling (and compressed backups)
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-file";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("everything", {
+  type: "file",
+  filename: "all-the-logs.log",
+  maxLogSize: 10485760,
+  backups: 3,
+  compress: true
+});
+```
+
+This will result in one current log file (`all-the-logs.log`). When that reaches 10Mb in size, it will be renamed and
+compressed to `all-the-logs.log.1.gz and a` new file opened called `all-the-logs.log`.
+When `all-the-logs.log` reaches 10Mb again, then all-the-logs.log.1.gz will be renamed to
+`all-the-logs.log.2.gz`, and so on.
+
+## Example with date rolling
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-file";
+
+export const logger = new Logger("Log Example");
+
+logger.appenders.set("file", {
+  type: "file",
+  filename: `${import.meta.dirname}/../logs/myfile.log`,
+  pattern: ".yyyy-MM-dd"
+});
+```
+
+---
+
+---
+url: /appenders/file-date.md
+---
+# Date Rolling File Appender
+
+This is a file appender that rolls log files based on a configurable time, rather than the file size. When using the date file appender, you should also call [logger.shutdown()](/introduction/getting-started.md) when your application terminates, to ensure that any remaining asynchronous writes have finished. Although the date file appender uses the [streamroller](https://github.com/nomiddlename/streamroller) library, this is included as a dependency of log4js so you do not need to include it yourself.
+
+## Configuration
+
+* **type** - `file`
+* **filename** - `string` - the path of the file where you want your logs written.
+* **pattern** - `string` (optional, defaults to `.yyyy-MM-dd`) - the pattern to use to determine when to roll the logs.
+* **layout** - (optional, defaults to basic layout) - see [layouts](/layouts/index.md)
+
+Any other configuration parameters will be passed to the underlying [streamroller](https://github.com/nomiddlename/streamroller) implementation (see also node.js core file streams):
+
+* **encoding** - `string` (default "utf-8")
+* **mode**- `integer` (default 0o644 - [node.js file modes](https://nodejs.org/dist/latest-v12.x/docs/api/fs.html#fs_file_modes))
+* **flags** - `string` (default 'a')
+* **compress** - `boolean` (default false) - compress the backup files during rolling (backup files will have `.gz` extension)
+* **alwaysIncludePattern** - `boolean` (default false) - include the pattern in the name of the current log file as well as the backups.
+* **daysToKeep** - `integer` (default 0) - if this value is greater than zero, then files older than that many days will be deleted during log rolling.
+* **keepFileExt** - `boolean` (default false) - preserve the file extension when rotating log files (`file.log` becomes `file.2017-05-30.log` instead of `file.log.2017-05-30`).
+
+The `pattern` is used to determine when the current log file should be renamed and a new log file created. For example, with a filename of 'cheese.log', and the default pattern of `.yyyy-MM-dd` - on startup this will result in a file called `cheese.log` being created and written to until the next write after midnight. When this happens, `cheese.log` will be renamed to `cheese.log.2017-04-30` and a new `cheese.log` file created. The appender uses the [date-format](https://github.com/nomiddlename/date-format) library to parse the `pattern`, and any of the valid formats can be used. Also note that there is no timer controlling the log rolling - changes in the pattern are determined on every log write. If no writes occur, then no log rolling will happen. If your application logs infrequently this could result in no log file being written for a particular time period.
+
+## Example (default daily log rolling)
+
+```javascript
+import {Logger} from "@tsed/logger";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("everything", {
+  type: "file",
+  filename: "all-the-logs.log",
+  pattern: ".yyyy-MM-dd"
+});
+
+logger.debug("I will be logged in all-the-logs.log");
+```
+
+This example will result in files being rolled every day. The initial file will be `all-the-logs.log`, with the daily backups being `all-the-logs.log.2017-04-30`, etc.
+
+## Example with hourly log rolling (and compressed backups)
+
+```javascript
+import {Logger} from "@tsed/logger";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("everything", {
+  type: "file",
+  filename: "all-the-logs.log",
+  pattern: ".yyyy-MM-dd-hh",
+  compress: true
+});
+```
+
+This will result in one current log file (`all-the-logs.log`). Every hour this file will be compressed and renamed to `all-the-logs.log.2017-04-30-08.gz` (for example) and a new `all-the-logs.log` created.
+
+---
+
+---
+url: /appenders/stdout.md
+---
+# Standard Out Appender
+
+This appender writes all log events to the standard output stream.
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install @tsed/logger-std
+```
+
+```bash [yarn]
+yarn add @tsed/logger-std
+```
+
+```bash [pnpm]
+pnpm add @tsed/logger-std
+```
+
+```bash [bun]
+bun add @tsed/logger-std
+```
+
+:::
+
+## Configuration
+
+type - `stdout`
+layout - object (optional, defaults to coloredLayout) - see [layouts](/layouts/index.md)
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {StdoutAppender} from "@tsed/logger-std";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: StdoutAppender,
+  levels: ["debug", "trace", "info"]
+});
+```
+
+---
+
+---
+url: /appenders/stderr.md
+---
+# Standard Error Appender
+
+This appender writes all log events to the standard error stream.
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install @tsed/logger-std
+```
+
+```bash [yarn]
+yarn add @tsed/logger-std
+```
+
+```bash [pnpm]
+pnpm add @tsed/logger-std
+```
+
+```bash [bun]
+bun add @tsed/logger-std
+```
+
+:::
+
+## Configuration
+
+type - `stderr`
+layout - object (optional, defaults to coloredLayout) - see [layouts](/layouts/index.md)
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {StderrAppender} from "@tsed/logger-std";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("error-log", {
+  type: StderrAppender,
+  levels: ["debug", "trace", "info"]
+});
+```
+
+---
+
+---
+url: /appenders/logentries.md
+---
+# LogEntries Appender
+
+Sends log events to a [LogEntries](https://logentries.com/) server.
+
+::: warning Deprecated
+`le_node` module is deprecated by is author in favor of `r7insight_node`.
+Please use [Insight appender](/appenders/insight.md) instead of.
+:::
+
+```bash
+npm install --save @tsed/logger-logentries
+```
+
+## Configuration
+
+* `type` - `logentries`
+* `options.token` - LogEntries token
+
+See all available options for LogEntries [here](https://www.npmjs.com/package/le_node).
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-logentries";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "logentries",
+  levels: ["info"],
+  options: {
+    token: "the token"
+    // other options of logentries
+  }
+});
+```
+
+---
+
+---
+url: /appenders/logstash-http.md
+---
+# LogStash HTTP Appender
+
+The logstash appenders for [Ts.ED Logger](https://logger.tsed.dev) send NDJSON formatted log events to [logstash](https://www.elastic.co/products/logstash) receivers.
+This appender uses HTTP to send the events (there is another logstash appender that uses [UDP](/appenders/logstash-udp.md)).
+
+```bash
+npm install --save @tsed/logger-logstash-http
+```
+
+## Configuration
+
+* `type` - `logstash-http`
+* `options.url` - `string` - logFaces receiver servlet URL
+* `options.application` - `string` (optional) - used to identify your application's logs
+* `options.logChannel` - `string` (optional) - also used to identify your application's logs \[but in a more specific way]
+* `options.logType` - `string` (optional) - used for the `type` field in the logstash data
+* `options.timeout` - `integer` (optional, defaults to 5000ms) - the timeout for the HTTP request.
+* `options.delayToFlush` - `integer` (optional, defaults to 0) - the delay before flushing buffer if the max buffer isn't reached.
+* `options.maxBuffer` - `integer` (optional, defaults to 0) - Group bulk request by the maxBuffer number. By Default the buffer is disabled.
+* `options.retriesOptions` - `object` (optional) - Configure retries strategy. See [axios-retry](https://www.google.com/search?client=firefox-b-d\&q=axios-retry) options for more details.
+
+This appender will also pick up Logger context values from the events, and add them as `p_` values in the logFaces event. See the example below for more details.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-logstash-http";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "logstash-http",
+  levels: ["info"],
+  options: {
+    url: "http://localhost:9200/_bulk",
+    application: "logstash-tsed",
+    logType: "application",
+    logChannel: "node"
+  }
+});
+
+logger.context.set("requestId", "123");
+logger.info("some interesting log message");
+logger.error("something has gone wrong");
+```
+
+Enable date log rolling:
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-logstash-http";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "logstash-http",
+  levels: ["info"],
+  options: {
+    url: "http://localhost:9200/_bulk",
+    application: () => "logstash-tsed-" + moment().format("YYYY.MM.DD"),
+    logType: "application",
+    logChannel: "node"
+  }
+});
+
+logger.context.set("requestId", "123");
+logger.info("some interesting log message");
+logger.error("something has gone wrong");
+```
+
+This example will result in two log events being sent to your `localhost:9200`.
+Both events will have a `context.requestId` property with a value of `123`.
+
+---
+
+---
+url: /appenders/logstash-udp.md
+---
+# LogStash UDP Appender
+
+The logstash appenders for [Ts.ED Logger](https://logger.tsed.dev).
+
+The logstash-udp appender supports sending log events to a [Logstash](https://www.elastic.co/products/logstash) server.
+It uses the node.js core UDP support, and so requires no extra dependencies.
+Remember to call `logger.shutdown` in your application if you want the UDP socket closed cleanly.
+
+```bash
+npm install --save @tsed/logger-logstash-udp
+```
+
+## Configuration
+
+* `type` - `logstash-udp`
+* `options.host` - `string` - hostname (or IP-address) of the logstash server
+* `options.port` - `integer` - port of the logstash server
+* `options.layout` - (optional, defaults to dummyLayout) - used for the message field of the logstash data (see layouts)
+* `options.extraDataProvider` - function (optional, defaults to put the second param of log to fields) - used to enhance the object sent to Logstash via UDP. this will be passed the log event and should return an object.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-logstash-udp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "logstash-udp",
+  levels: ["info"],
+  options: {
+    host: "log.server",
+    port: 12345
+  }
+});
+
+logger.info("important log message", {cheese: "gouda", biscuits: "hobnob"});
+```
+
+This will result in a JSON message being sent to log.server:12345 over UDP, with the following format:
+
+```javascript
+{
+  '@version': '1',
+  '@timestamp': '2014-04-22T23:03:14.111Z',
+  'host': 'yourHostname',
+  'level': 'INFO',
+  'category': 'default',
+  'message': 'important log message',
+  'fields': {
+    'biscuits': 'hobnob',
+    'cheese': 'gouda'
+  }
+}
+```
+
+### use extraDataProvider
+
+```javascript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-logstash-udp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "loggly",
+  levels: ["info"],
+  options: {
+    host: "log.server",
+    port: 12345,
+    extraDataProvider: (loggingEvent) => ({
+      host: "anotherHostname", // this will replace the default real host
+      clientIp: "1.2.3.4", // this will be added
+      fields: {
+        tag: "myTag", // this will be added to the fields
+        pid: loggingEvent.pid, // this will be added to the fields
+        cheese: "defaultCheese" // this will be added to the fields but will not be replaced in this example
+      }
+    })
+  }
+});
+
+logger.info("important log message", {cheese: "gouda", biscuits: "hobnob"});
+```
+
+This will result in a JSON message being sent to log.server:12345 over UDP, with the following format:
+
+```javascript
+{
+  '@version': '1',
+  '@timestamp': '2014-04-22T23:03:14.111Z',
+  'host': 'anotherHostname',
+  'level': 'INFO',
+  'category': 'default',
+  'message': 'important log message',
+  'clientIp': '1.2.3.4',
+  'fields': {
+    'cheese': 'defaultCheese',
+    'tag': 'myTag',
+    'pid': 123
+  }
+}
+```
+
+So, if not using the default `extraDataProvider`, you have to put the second param of the log to the fields yourself if you want.
+
+---
+
+---
+url: /appenders/loggly.md
+---
+# Loggly Appender
+
+Sends logging events to [Loggly](https://www.loggly.com), optionally adding tags.
+This appender uses [node-loggly-bulk](https://www.npmjs.com/package/node-loggly-bulk).
+Consult the docs for node-loggly-bulk, or loggly itself, if you want more information on the configuration options below.
+
+```bash
+npm install --save @tsed/logger-loggly
+```
+
+## Configuration
+
+* `type` - `loggly`
+* `options.token` - `string` - your really long input token
+* `options.subdomain` - `string` - your subdomain
+* `options.auth` - `object` (optional) - authentication details
+  * `username` - `string`
+  * `password` - `string`
+* `options.tags` - `Array<string>` (optional) - tags to include in every log message
+
+See all available options for Loggly [here](https://www.npmjs.com/package/node-loggly-bulk).
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-loggly";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "loggly",
+  levels: ["info"],
+  options: {
+    token: "somethinglong",
+    subdomain: "your.subdomain",
+    tags: ["tag1"]
+  }
+});
+
+logger.info({tags: ["my-tag-1", "my-tag-2"]}, "Some message");
+```
+
+This will result in a log message being sent to loggly with the tags `tag1`, `my-tag-1`, `my-tag-2`.
+
+---
+
+---
+url: /appenders/rabbitmq.md
+---
+# RabbitMQ Appender
+
+Push log events to a [RabbitMQ](https://www.rabbitmq.com/).
+
+```bash
+npm install --save @tsed/logger-rabitmq
+```
+
+If you want to be sure that all messages have been sent before your programme exits, remember to call `logger.shutdown()`.
+
+## Configuration
+
+* `type` - `rabbitmq`
+* `layout` - `object` (optional, defaults to `messagePassThroughLayout`) - the layout to use for log events (see [Layouts](/layouts/index.md)).
+* `options.host` - `string` (optional, defaults to `127.0.0.1`) - the location of the rabbitmq server
+* `options.port` - `integer` (optional, defaults to `5672`) - the port the rabbitmq server is listening on
+* `options.username` - `string` (optional, defaults to `guest`) - username to use when authenticating connection to rabbitmq
+* `options.password` - `string` (optional, defaults to `guest`) - password to use when authenticating connection to rabbitmq
+* `options.routing_key` - `string` (optional, defaults to `logstash`) - rabbitmq message's routing\_key
+* `options.durable` - `string` (optional, defaults to false) - will that RabbitMQ lose our queue.
+* `options.exchange` - `string` (optional, defaults to `log`)- rabbitmq send message's exchange
+* `options.mq_type` - `string` (optional, defaults to `direct`) - rabbitmq message's mq\_type
+* `options.vhost` - `string` (optional, defaults to `/`) - vhost to use
+* `options.shutdownTimeout` - `integer` (optional, defaults to `10000`) - maximum time in milliseconds to wait for messages to be sent during log4js shutdown.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-rabbitmq";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "rabbitmq",
+  levels: ["info"],
+  options: {
+    host: "127.0.0.1",
+    port: 5672,
+    username: "guest",
+    password: "guest",
+    routing_key: "logstash",
+    exchange: "exchange_logs",
+    mq_type: "direct",
+    durable: true
+  }
+});
+```
+
+This configuration will push log messages to the rabbitmq on `127.0.0.1:5672`.
+
+---
+
+---
+url: /appenders/seq.md
+---
+# Seq Appender
+
+Sends log events to a [Seq](https://www.npmjs.com/package/seq-logging) server.
+
+```bash
+npm install --save @tsed/seq
+```
+
+## Configuration
+
+* `type` - `seq`
+* `options.url` - The url log server
+* `options.apiKey` - The apiKey
+
+See all available options for Seq [here](https://www.npmjs.com/package/seq-logging).
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-seq";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "seq",
+  levels: ["info"],
+  options: {
+    serverUrl: "http://localhost:5341",
+    apiKey: "the token"
+    // other Seq options
+  }
+});
+```
+
+---
+
+---
+url: /appenders/slack.md
+---
+# Slack Appender
+
+Sends log events to a [slack](https://slack.com) channel.
+
+```bash
+npm install --save @tsed/logger-slack
+```
+
+## Configuration
+
+* `type` - `slack`
+* `options.token` - `string` - your Slack API token (see the (slack web api docs)\[https://slack.dev/node-slack-sdk/web-api])
+* `options.channel_id` - `string` - the channel to send log messages
+* `options.icon_url` - `string` (optional) - the icon to use for the message
+* `options.username` - `string` - the username to display with the message
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-slack";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "slack",
+  levels: ["error"],
+  options: {
+    token: "xoxb-xxxx-xxxx-xxxx",
+    channel_id: "prod-alerts",
+    username: "our_application"
+  }
+});
+```
+
+---
+
+---
+url: /appenders/smtp.md
+---
+# SMTP Appender
+
+Sends log events as emails. If you use this appender, you should also call `logger.shutdown` when your application closes so that any remaining emails can be sent. Many of the configuration options below are passed through to nodemailer, so you should read their docs to get the most out of this appender.
+
+```bash
+npm install @tsed/logger
+npm install @tsed/logger-smtp
+```
+
+## Configuration
+
+* `type` - `smtp`
+* `SMTP` - `object` (optional, if not present will use `transport` field)
+  * `host` - `string` (optional, defaults to `localhost`)
+  * `port` - `integer` (optional, defaults to `25`)
+  * `auth` - `object` (optional) - authentication details
+    * `user` - `string`
+    * `pass` - `string`
+* `transport` - `object` (optional, if not present will use `SMTP`) - see [`nodemailer`](https://nodemailer.com/smtp/) docs for transport options
+  * `plugin` - `string` (optional, defaults to `smtp`) - the nodemailer transport plugin to use
+  * `options` - `object` - configuration for the transport plugin
+* `attachment` - `object` (optional) - send logs as email attachment
+  * `enable` - `boolean` (optional, defaults to `false`)
+  * `message` - `string` (optional, defaults to `See logs as attachment`) - message to put in body of email
+  * `filename` - `string` (optional, defaults to `default.log`) - attachment filename
+* `sendInterval` - `integer` (optional, defaults to `0`) - batch emails and send in one email every `sendInterval` seconds, if `0` then every log message will send an email.
+* `shutdownTimeout` - `integer` (optional, defaults to `5`) - time in seconds to wait for emails to be sent during shutdown
+* `recipients` - `string` - email addresses to send the logs to
+* `subject` - `string` (optional, defaults to message from first log event in batch) - subject for email
+* `sender` - `string` (optional) - who the logs should be sent as
+* `html` - `boolean` (optional, defaults to `false`) - send the email as HTML instead of plain text
+* `layout` - `object` (optional, defaults to basicLayout) - see [layouts](https://logger.tsed.dev/layouts/index.html)
+* `cc` - `string` (optional) - email addresses to send the carbon-copy logs to
+* `bcc` - `string` (optional) - email addresses to send the blind-carbon-copy logs to
+
+## Example (default config)
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-smtp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("email", {
+  type: "smtp",
+  levels: ["error"],
+  recipients: "dev.team@company.name"
+});
+```
+
+This configuration will send an email using the smtp server running on `localhost:25`, for every log event of level `ERROR` and above.
+The email will be sent to `dev.team@company.name`, the subject will be the message part of the log event, the body of the email will be log event formatted by the basic layout function.
+
+## Example (logs as attachments, batched)
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-smtp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("email", {
+  type: "smtp",
+  levels: ["error"],
+  recipients: "dev.team@company.name",
+  subject: "Latest logs",
+  sender: "my.application@company.name",
+  attachment: {
+    enable: true,
+    filename: "latest.log",
+    message: "See the attachment for the latest logs"
+  },
+  sendInterval: 3600
+});
+```
+
+This configuration will send an email once every hour, with all the log events of level `ERROR` and above as an attached file.
+
+## Example (custom SMTP host)
+
+```javascript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-smtp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("email", {
+  type: "smtp",
+  levels: ["error"],
+  recipients: "dev.team@company.name",
+  SMTP: {host: "smtp.company.name", port: 8025}
+});
+```
+
+This configuration can also be written as:
+
+```javascript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-smtp";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("email", {
+  type: "smtp",
+  levels: ["error"],
+  recipients: "dev.team@company.name",
+  transport: {
+    plugin: "smtp",
+    options: {
+      host: "smtp.company.name",
+      port: 8025
+    }
+  }
+});
+```
+
+A similar config can be used to specify a different transport plugin than `smtp`. See the [`nodemailer`](https://nodemailer.com/smtp/) docs for more details.
+
+---
+
+---
+url: /appenders/custom.md
+---
+# Custom Appender
+
+Ts.Logger can load appenders from outside the core appenders by using @@Appender@@ decorator.
+The type config value is used as a require path if no matching appender can be found.
+For example, the following configuration will create an appender with decorators:
+
+```typescript
+// consoleAppender.ts
+import {Appender, BaseAppender, LogEvent} from "@tsed/logger";
+const consoleLog = console.log.bind(console);
+
+@Appender({name: "console2"})
+export class ConsoleAppender extends BaseAppender {
+  write(loggingEvent: LogEvent) {
+    consoleLog(this.layout(loggingEvent, this.config.timezoneOffset));
+  }
+}
+```
+
+This appender can be use like this:
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "./consoleAppender.ts";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console2",
+  levels: ["debug", "info", "trace"]
+});
+```
+
+---
+
+---
+url: /layouts.md
+---
+# Layouts
+
+Layouts are functions used by appenders to format log events for output. They take a log event as an argument and return a string. TsLogDebug comes with several layouts built-in, and provides ways to create your own if these are not suitable.
+
+For most use cases you will not need to configure layouts - there are some appenders which do not need layouts defined (for example, logFaces-UDP); all the appenders that use layouts will have a sensible default defined.
+
+Most appender configuration will take a field called layout, which is an object - typically with a single field type which is the name of a layout defined below. Some layouts require extra configuration options, which should be included in the same object.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "stdout",
+  layout: {type: "basic"},
+  levels: ["debug", "info", "trace"]
+});
+```
+
+::: tip
+This configuration replaces the stdout appender's default colored layout with basic layout.
+:::
+
+## Built-in Layouts
+
+---
+
+---
+url: /layouts/basic.md
+---
+# Basic layout
+
+* type - `basic`
+
+Basic layout will output the timestamp, level, category, followed by the formatted log event data.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {BasicLayout} from "@tsed/logger/layouts/BasicLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: BasicLayout,
+  levels: ["debug", "info", "trace"]
+});
+logger.debug("Log something");
+```
+
+This will output:
+
+```bash
+[2017-03-30 07:57:00.113] [DEBUG] [loggerName] - Log something
+```
+
+---
+
+---
+url: /layouts/colored.md
+---
+# Colored layout
+
+* type - `colored`
+
+This layout is the same as basic, except that the timestamp, level and category will be colored according to the log event's level (if your terminal/file supports it - if you see some weird characters in your output and no color then you should probably switch to basic). The colors used are:
+
+* TRACE - `blue`
+* DEBUG - `cyan`
+* INFO - `green`
+* WARN - `yellow`
+* ERROR - `red`
+* FATAL - `magenta`
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {StdoutAppender} from "@tsed/logger-std";
+import {ColoredLayout} from "@tsed/logger/layouts/ColoredLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: StdoutAppender,
+  layout: ColoredLayout,
+  levels: ["debug", "info", "trace"]
+});
+logger.debug("Log something");
+```
+
+This will output:
+
+```bash
+[2017-03-30 07:57:00.113] [DEBUG] [loggerName] - Log something
+```
+
+---
+
+---
+url: /layouts/dummy.md
+---
+# Dummy layout
+
+* type - `dummy`
+
+This layout only outputs the first value in the log event's data.
+
+#### Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {DummyLayout} from "@tsed/logger/layouts/DummyLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: DummyLayout,
+  levels: ["debug", "info", "trace"]
+});
+
+logger.debug("Cheese is too ripe! Cheese was: ", cheeseName);
+```
+
+This will output:
+
+```bash
+Cheese is too ripe! Cheese was:
+```
+
+---
+
+---
+url: /layouts/message-pass-through.md
+---
+# Message Pass-Through layout
+
+type - `messagePassThrough`
+
+This layout just formats the log event data, and does not output a timestamp,
+level or category. It is typically used in appenders that serialise the events using a specific format.
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {MessagePassThroughLayout} from "@tsed/logger/layouts/MessagePassThroughLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: MessagePassThroughLayout,
+  levels: ["debug", "info", "trace"]
+});
+logger.debug("Log something");
+```
+
+This will output:
+
+```bash
+Log something
+```
+
+---
+
+---
+url: /layouts/json.md
+---
+# Json layout
+
+* type - `json`
+* separator - string - char that separate each line
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {JsonLayout} from "@tsed/logger/layouts/JsonLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log-json", {
+  type: "console",
+  layout: {type: JsonLayout, separator: ","},
+  levels: ["debug", "info", "trace"]
+});
+
+logger.info("this is just a test");
+logger.error("of a custom appender");
+logger.warn("that outputs json");
+```
+
+This example outputs the following:
+
+```bash
+{"startTime":"2017-06-05T22:23:08.479Z","categoryName":"json-test","data":["this is just a test"],"level":"INFO","context":{}},
+{"startTime":"2017-06-05T22:23:08.483Z","categoryName":"json-test","data":["of a custom appender"],"level":"ERROR","context":{}},
+{"startTime":"2017-06-05T22:23:08.483Z","categoryName":"json-test","data":["that outputs json"],"level""WARN","context":{}},
+```
+
+---
+
+---
+url: /layouts/pattern.md
+---
+# Pattern layout
+
+* type - pattern
+* pattern - string - specifier for the output format, using placeholders as described below
+* tokens - object (optional) - user-defined tokens to be used in the pattern
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install @tsed/logger-pattern-layout
+```
+
+```bash [yarn]
+yarn add @tsed/logger-pattern-layout
+```
+
+```bash [pnpm]
+pnpm add @tsed/logger-pattern-layout
+```
+
+```bash [bun]
+bun add @tsed/logger-pattern-layout
+```
+
+:::
+
+## Pattern format
+
+The pattern string can contain any characters, but sequences beginning with `%` will be replaced with values taken from
+the log event, and other environmental values.
+
+Format for specifiers is `%[padding].[truncation][field]{[format]} -` padding and truncation are optional, and format only applies to a few tokens (notably, date). e.g. `%5.10p -`
+left pad the log level by 5 characters, up to a max of 10.
+
+Fields can be any of:
+
+* `%r` time in toLocaleTimeString format,
+* `%p` log level,
+* `%c` log category,
+* `%h` hostname,
+* `%m` log data,
+* `%j` log data as JSON,
+* `%d` date, formatted - default is `ISO8601`, format options are: `ISO8601`, `ISO8601_WITH_TZ_OFFSET`, `ABSOLUTE`, `DATE`, or any string compatible with the date-format library. e.g. `%d{DATE}, %d{yyyy/MM/dd-hh.mm.ss}`,
+* `%% % -` for when you want a literal `%` in your output,
+* `%n` newline,
+* `%z` process id (from process.pid),
+* `%x{[tokenname]}` add dynamic tokens to your log. Tokens are specified in the tokens parameter,
+* `%X{[tokenname]}` add values from the Logger context. Tokens are keys into the context values,
+* `%[` start a colored block (color will be taken from the log level, similar to coloredLayout),
+* `%]` end a colored block.
+
+## Tokens
+
+User-defined tokens can be either a string or a function. Functions will be passed the log event, and should return a string. For example, you could define a custom token that outputs the log event's context value for `user` like so:
+
+```typescript
+import {Logger} from "@tsed/logger";
+import {PatternLayout} from "@tsed/logger-pattern-layout";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log-custom", {
+  type: "console",
+  layout: {
+    type: PatternLayout,
+    pattern: "%d %p %c %x{user} %m%n",
+    tokens: {
+      user: (logEvent) => AuthLibrary.currentUser()
+    }
+  },
+  levels: ["debug", "info", "trace"]
+});
+logger.info("doing something.");
+```
+
+This would output:
+
+```bash
+2017-06-01 08:32:56.283 INFO default charlie doing something.
+```
+
+You can also use the Logger context to store tokens (sometimes called Nested Diagnostic Context, or Mapped Diagnostic Context) and use them in your layouts.
+
+```typescript
+import {Logger} from "@tsed/logger";
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: {
+    type: "pattern",
+    pattern: "%d %p %c %X{user} %m%n"
+  },
+  levels: ["debug", "info", "trace"]
+});
+logger.context.add("user", "charlie");
+logger.info("doing something.");
+```
+
+This would output:
+
+```bash
+2017-06-01 08:32:56.283 INFO default charlie doing something.
+```
+
+::: tip
+Note that you can also add functions to the Logger Context, and they will be passed the logEvent as well.
+:::
+
+---
+
+---
+url: /layouts/custom.md
+---
+# Custom layout
+
+You can add your own layouts with @@Layout()@@ before pushing a configure to your logger.
+
+::: code-group
+
+```typescript [Decorator]
+// customLayout.ts
+import {BaseLayout, LogEvent, Layout} from "@tsed/logger";
+
+@Layout({name: "customJson"})
+export class JsonLayout extends BaseLayout {
+  transform(loggingEvent: LogEvent, timezoneOffset?: number): string {
+    const log = {
+      startTime: loggingEvent.startTime,
+      categoryName: loggingEvent.categoryName,
+      level: loggingEvent.level.toString(),
+      data: loggingEvent.data,
+      context: loggingEvent.context
+    };
+
+    return JSON.stringify(log) + (this.config["separator"] || "");
+  }
+}
+```
+
+```typescript [Functional API]
+// customLayout.ts
+import {BaseLayout, LogEvent, layout} from "@tsed/logger";
+
+export class JsonLayout extends BaseLayout {
+  transform(loggingEvent: LogEvent, timezoneOffset?: number): string {
+    const log = {
+      startTime: loggingEvent.startTime,
+      categoryName: loggingEvent.categoryName,
+      level: loggingEvent.level.toString(),
+      data: loggingEvent.data,
+      context: loggingEvent.context
+    };
+
+    return JSON.stringify(log) + (this.config["separator"] || "");
+  }
+}
+
+layout("customJson", JsonLayout);
+```
+
+:::
+
+This layout can be use like this:
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "./customLayout.js";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: {type: "customJson"},
+  levels: ["debug", "info", "trace"]
+});
+logger.info("this is just a test");
+logger.error("of a custom appender");
+logger.warn("that outputs json");
+```
+
+This example outputs the following:
+
+```bash
+{"startTime":"2017-06-05T22:23:08.479Z","categoryName":"json-test","data":["this is just a test"],"level":"INFO","context":{}},
+{"startTime":"2017-06-05T22:23:08.483Z","categoryName":"json-test","data":["of a custom appender"],"level":"ERROR","context":{}},
+{"startTime":"2017-06-05T22:23:08.483Z","categoryName":"json-test","data":["that outputs json"],"level":"WARN","context":{}},
+```
+
+---
+
+---
+url: /api.md
+description: Api Reference of Ts.ED logger
+---
+
+# API reference
+
+Browse the API reference by package. Each link opens the corresponding API page.
+
+---
+
+---
+url: /appenders/insight.md
+---
+# Insight Appender
+
+Sends log events to a [Insight](https://www.rapid7.com/products/) server.
+
+```bash
+npm install --save @tsed/logger-insight
+```
+
+## Configuration
+
+* `type` - `insight`
+* `options.token` - LogEntries token
+* `options.region` - The region of ingestion endpoint to be used. Examples: `eu`, `us` etc.
+
+See all available options for Insight [here](https://www.npmjs.com/package/r7insight_node).
+
+## Example
+
+```typescript
+import {Logger} from "@tsed/logger";
+import "@tsed/logger-insight";
+
+const logger = new Logger("loggerName");
+
+logger.appenders.set("stdout", {
+  type: "insight",
+  levels: ["info"],
+  options: {
+    token: "the token",
+    region: "us"
+    // other options of logentries
+  }
+});
+```
+
+---
+
+---
+url: /layouts/object.md
+---
+# Object layout
+
+* type - `object`
+
+## Example
+
+```typescript
+import {$log} from "@tsed/logger";
+import {ObjectLayout} from "@tsed/logger/layouts/ObjectLayout.js";
+
+logger.appenders.set("std-log", {
+  type: "console",
+  layout: ObjectLayout,
+  levels: ["debug", "info", "trace"]
+});
+
+$log.info("this is just a test");
+$log.error("of a custom appender");
+$log.warn("that outputs json");
+```

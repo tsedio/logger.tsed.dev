@@ -1,0 +1,51 @@
+# @tsed/logger
+
+> A multi-channel logger.
+
+Manage your logs of your application with ease.
+
+## Table of Contents
+
+
+### Introduction
+
+- [What is Ts.ED?](/introduction/what-is-tsed.md)
+- [Capabilities](/introduction/capabilities.md)
+- [Getting started](/introduction/getting-started.md)
+- [Migration Guide: v7 to v8](/introduction/migrate-to-v8.md)
+
+### Appenders
+
+- [Appenders](/appenders.md)
+- [Console Appender](/appenders/console.md)
+- [Connect Appender](/appenders/connect.md)
+- [File Appender](/appenders/file.md)
+- [Date Rolling File Appender](/appenders/file-date.md)
+- [Standard Out Appender](/appenders/stdout.md)
+- [Standard Error Appender](/appenders/stderr.md)
+- [LogEntries Appender](/appenders/logentries.md)
+- [LogStash HTTP Appender](/appenders/logstash-http.md)
+- [LogStash UDP Appender](/appenders/logstash-udp.md)
+- [Loggly Appender](/appenders/loggly.md)
+- [RabbitMQ Appender](/appenders/rabbitmq.md)
+- [Seq Appender](/appenders/seq.md)
+- [Slack Appender](/appenders/slack.md)
+- [SMTP Appender](/appenders/smtp.md)
+- [Custom Appender](/appenders/custom.md)
+
+### Layouts
+
+- [Layouts](/layouts.md)
+- [Basic layout](/layouts/basic.md)
+- [Colored layout](/layouts/colored.md)
+- [Dummy layout](/layouts/dummy.md)
+- [Message Pass-Through layout](/layouts/message-pass-through.md)
+- [Json layout](/layouts/json.md)
+- [Pattern layout](/layouts/pattern.md)
+- [Custom layout](/layouts/custom.md)
+
+### Other
+
+- [API reference](/api.md): Api Reference of Ts.ED logger
+- [Insight Appender](/appenders/insight.md)
+- [Object layout](/layouts/object.md)
